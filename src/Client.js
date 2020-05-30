@@ -9,6 +9,7 @@ const Status = require('./Status');
 const Season = require('./Season');
 const Tournament = require('./Tournament');
 const PlayerSeason = require('./playerseason/PlayerSeason');
+const PlayerSeasonRanked = require('./playerseason/PlayerSeasonRanked');
 const { GAME_MODES } = require('./util/Constants');
 /**
  * The main hub for interacting with the pubg api, and starting point for any api instance
@@ -130,9 +131,9 @@ class Client {
     }
 
     /**
-     * Get a player season object. 
-     * When providing a Player Obj for [player], the PlayerSeason will include the 
-     * full fetched player in relationships.player. Otherwise, it will just be a 
+     * Get a player season object.
+     * When providing a Player Obj for [player], the PlayerSeason will include the
+     * full fetched player in relationships.player. Otherwise, it will just be a
      * reference to the player id and will need .fetch() for its info to be complete.
      * @param {(string|Player)} player The player of the player season
      * @param {(string|Season)} season The season of the player season
@@ -160,8 +161,38 @@ class Client {
     }
 
     /**
+     * Get a ranked player season object.
+     * When providing a Player Obj for [player], the PlayerSeason will include the
+     * full fetched player in relationships.player. Otherwise, it will just be a
+     * reference to the player id and will need .fetch() for its info to be complete.
+     * @param {(string|Player)} player The player of the player season
+     * @param {(string|Season)} season The season of the player season
+     * @param {string} [shard=player.attributes.shardId|this.defaultShard] The server shard to send the request to
+     * @returns {Promise<PlayerSeason>}
+     * @memberof Client
+     */
+    getPlayerSeasonRanked(player, season, shard) {
+        return this._baseRequest({
+            endpoint: `players/${
+              player instanceof Player ? player.id : player
+            }/seasons/${season instanceof Season ? season.id : season}/ranked`,
+            shard:
+              player instanceof Player ?
+                player.attributes.shardId :
+                shard || this.defaultShard,
+        })
+          .then(ps => {
+              if (player instanceof Player) ps.data.relationships.player = player;
+              return new PlayerSeasonRanked(ps.data, this);
+          })
+          .catch(e => {
+              throw e.message;
+          });
+    }
+
+    /**
      * Get an array of up to 10 player season objects.
-     * For PUBG API calls optimization, method will use the regular 
+     * For PUBG API calls optimization, method will use the regular
      * getPlayerSeason() function when fetching for less than 6 players.
      * This function is meant to retrieve more than one Player Season.
      * For a single player better use getPlayerSeason()
