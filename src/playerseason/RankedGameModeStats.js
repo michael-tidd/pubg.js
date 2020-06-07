@@ -56,10 +56,22 @@ class RankedGameModeStats {
         this.top10Ratio = content.top10Ratio;
 
         /**
+         * Win Ratio
+         * @type {Number}
+         */
+        this.winRatio = content.winRatio;
+
+        /**
          * Assists
          * @type {Number}
          */
         this.assists = content.assists;
+
+        /**
+         * Wins
+         * @type {Number}
+         */
+        this.wins = content.wins;
 
         /**
          * Kills
